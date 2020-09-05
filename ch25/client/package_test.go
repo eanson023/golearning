@@ -2,7 +2,7 @@ package client
 
 import (
 	// 从GOPATH src后的目录开始
-	"go_learning/ch25/series"
+	"golearning/ch25/series"
 	"testing"
 )
 
