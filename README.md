@@ -1,2 +1,2 @@
 # go-learning
-Golang学习，目前第一张基础语法
+Golang学习，进度30%
