@@ -205,3 +205,23 @@ func TestStructChange(t *testing.T) {
 	a := vx.Interface().(int)
 	t.Log(&a, &s.X, a, s.X)
 }
+
+type user struct {
+	Name string
+	Age  int `json:"age" id:"100"` // 结构体标签
+}
+
+func TestRef222(t *testing.T) {
+	s := user{
+		Name: "zs",
+		Age:  1,
+	}
+
+	typeOfUser := reflect.TypeOf(s)
+
+	// 字段用法
+	for i := 0; i < typeOfUser.NumField(); i++ { // NumField 当前结构体有多少个字段
+		fieldType := typeOfUser.Field(i) // 获取每个字段
+		fmt.Println(fieldType.Name, fieldType.Tag)
+	}
+}
