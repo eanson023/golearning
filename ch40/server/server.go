@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	// "io"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -56,27 +56,28 @@ func main() {
 
 	})
 	http.HandleFunc("/upload", func(writer http.ResponseWriter, req *http.Request) {
-		file, _ := os.OpenFile("./pic.jpg", os.O_RDWR|os.O_CREATE, 0666)
+		fileName := "./pic.jpg"
+		file, _ := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0666)
 		defer file.Close()
 		bufWriter := bufio.NewWriter(file)
-		bufWriter.ReadFrom(req.Body)
-		bufWriter.Flush()
-		// for {
-		// 	buf := make([]byte, 1024)
-		// 	_, err := req.Body.Read(buf)
-		// 	fmt.Println(len(buf))
-		// 	if err != nil && err != io.EOF {
-		// 		panic(err)
-		// 	}
-		// 	file.Write(buf)
-		// 	if err == io.EOF {
-		// 		break
-		// 	}
-		// }
+		// bufWriter.ReadFrom(req.Body)
+		// bufWriter.Flush()
+		for {
+			buf := make([]byte, 1024)
+			_, err := req.Body.Read(buf)
+			if err != nil && err != io.EOF {
+				os.Remove(fileName)
+				writer.Write([]byte("{\"error\":\"上传过程出错\"}"))
+			}
+			bufWriter.Write(buf)
+			bufWriter.Flush()
+			if err == io.EOF {
+				break
+			}
+		}
 		writer.Write([]byte("{\"msg\":\"ojbk\"}"))
 	})
 	var port string = ":8080"
 	fmt.Println("server is listening on port" + port)
 	http.ListenAndServe(port, nil)
-
 }
