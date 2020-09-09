@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	crawler.Login("201706084333", "aini520..")
+	crawler.Start("", "")
 }
