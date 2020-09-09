@@ -1,8 +1,11 @@
 package ch42
 
 import (
+	"fmt"
 	"net/url"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -33,9 +36,15 @@ func (lf *LoginForm) addToRequestForm(form url.Values) {
 	getValue := reflect.ValueOf(lf).Elem()
 	getType := reflect.TypeOf(lf).Elem()
 	// 反射添加到map
+	// 反射添加进条件中
+	params := make([]string, 4)
 	for i := 0; i < getValue.NumField(); i++ {
-		form[getType.Field(i).Name] = []string{getValue.Field(i).String()}
+		str := getType.Field(i).Name + "=" + getValue.Field(i).String()
+		params = append(params, str)
+		// _ = writer.WriteField(getType.Field(i).Name, getValue.Field(i).String())
 	}
+	ret := url.QueryEscape(strings.Join(params, "&"))
+	fmt.Println(ret)
 }
 
 func Test(t *testing.T) {
@@ -45,4 +54,12 @@ func Test(t *testing.T) {
 	for key, value := range form {
 		t.Log(key, value)
 	}
+}
+
+func TestUrlEncode(t *testing.T) {
+	str := "\u4e2d\u6587"
+	t.Log(url.QueryEscape(str))
+	sText := "中文"
+	textQuoted := strconv.QuoteToASCII(sText)
+	t.Log(textQuoted)
 }

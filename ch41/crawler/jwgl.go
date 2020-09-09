@@ -1,14 +1,16 @@
 package crawler
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/axgle/mahonia"
+	"github.com/PuerkitoBio/goquery"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -54,8 +56,12 @@ func newRequestGeneral() *RequestGeneral {
 //添加cookie进ReqHeader
 func (reqGeneral *RequestGeneral) addCookie(cookies []*http.Cookie) {
 	for _, cookie := range cookies {
+		cookie.MaxAge = 1800
 		reqGeneral.cookies = append(reqGeneral.cookies, cookie)
 	}
+}
+func (reqGeneral *RequestGeneral) addHeader(key string, value string) {
+	reqGeneral.headers[key] = value
 }
 
 // 将RequestHeader导入到http请求中
@@ -74,7 +80,8 @@ func (reqGeneral *RequestGeneral) cookieIntoRequest(request *http.Request) {
 	}
 }
 
-func (reqGeneral *RequestGeneral) makeNilParamRequest(method string, url string) *http.Request {
+// fmt.Printf("", var)
+func (reqGeneral *RequestGeneral) newEmptyBodyRequest(method string, url string) *http.Request {
 	request, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		panic(err)
@@ -84,24 +91,42 @@ func (reqGeneral *RequestGeneral) makeNilParamRequest(method string, url string)
 	return request
 }
 
-func (lf *LoginForm) generateForm() url.Values {
-	form := make(url.Values, 4)
+func (reqGeneral *RequestGeneral) newRequest(method string, url string, body io.Reader) *http.Request {
+	request, err := http.NewRequest(method, url, body)
+	if err != nil {
+		panic(err)
+	}
+	// 将基本请求头加入到请求中
+	reqGeneral.headerIntoRequest(request)
+	return request
+}
+
+func (lf *LoginForm) generateForm(reqGeneral *RequestGeneral) *bytes.Buffer {
+	// x-www-form-urlencoded
+	payload := &bytes.Buffer{}
 	getValue := reflect.ValueOf(lf).Elem()
 	getType := reflect.TypeOf(lf).Elem()
-	// 反射添加到map
+	// 反射添加进条件中
+	params := []string{}
 	for i := 0; i < getValue.NumField(); i++ {
-		form[getType.Field(i).Name] = []string{getValue.Field(i).String()}
+		str := getType.Field(i).Name + "=" + url.QueryEscape(getValue.Field(i).String())
+		params = append(params, str)
 	}
-	return form
+	ret := strings.Join(params, "&")
+	fmt.Println(ret)
+	payload.ReadFrom(strings.NewReader(ret))
+	reqGeneral.addHeader("Content-Type", "application/x-www-form-urlencoded")
+	return payload
 }
 
 func newLoginForm(username string, password string, checkcode string) *LoginForm {
 	return &LoginForm{
 		// 固定值
-		__VIEWSTATE:      "dDw3OTkxMjIwNTU7Oz6bmpbeSO1k01TBeZU9nxNbmYM4aw==",
-		TextBox1:         username,
-		TextBox2:         password,
-		TextBox3:         checkcode,
+		__VIEWSTATE: "dDw3OTkxMjIwNTU7Oz6bmpbeSO1k01TBeZU9nxNbmYM4aw==",
+		TextBox1:    username,
+		TextBox2:    password,
+		TextBox3:    checkcode,
+		// 学生
 		RadioButtonList1: "学生",
 	}
 }
@@ -122,8 +147,7 @@ func Start(username string, password string) {
 	loginForm := newLoginForm(username, password, checkcode)
 	// 再次睡眠
 	time.Sleep(time.Second * 1)
-	success, resp := login(reqGeneral, loginForm)
-	printBody(resp.Body)
+	success, _ := login(reqGeneral, loginForm)
 	if success {
 		fmt.Println("登录成功")
 	} else {
@@ -133,19 +157,21 @@ func Start(username string, password string) {
 
 // 获取教务系统cookie 里面包含sessionID
 func getJwglCookies(reqGeneral *RequestGeneral) ([]*http.Cookie, error) {
-	request := reqGeneral.makeNilParamRequest("GET", URL)
-	if resp, err := client.Do(request); err != nil {
+	request := reqGeneral.newEmptyBodyRequest("GET", URL)
+	resp, err := client.Do(request)
+	if err != nil {
 		return nil, err
-	} else {
-		return resp.Cookies(), nil
 	}
+	return resp.Cookies(), nil
 }
 
 // 1. 获取cookie,通过cookie获取该验证码
 func inputCheckCode(reqGeneral *RequestGeneral) string {
 	var checkcode string
 	checkCodeURL := "http://jwgl.sanxiau.edu.cn/CheckCode.aspx?"
-	request := reqGeneral.makeNilParamRequest("GET", checkCodeURL)
+	request := reqGeneral.newEmptyBodyRequest("GET", checkCodeURL)
+	reqGeneral.cookieIntoRequest(request)
+	reqGeneral.headerIntoRequest(request)
 	if resp, err := client.Do(request); err != nil {
 		panic(err)
 	} else {
@@ -166,32 +192,26 @@ func inputCheckCode(reqGeneral *RequestGeneral) string {
 }
 
 // 2. 模拟表单登录，随后根据Location跳转获取信息
+// return 是否登录成功和响应结果
 func login(reqGeneral *RequestGeneral, loginForm *LoginForm) (bool, *http.Response) {
 	loginURL := "http://jwgl.sanxiau.edu.cn/default2.aspx"
-	request := reqGeneral.makeNilParamRequest("POST", loginURL)
 	// 添加
-	request.PostForm = loginForm.generateForm()
+	param := loginForm.generateForm(reqGeneral)
+	request := reqGeneral.newRequest("POST", loginURL, param)
+	reqGeneral.cookieIntoRequest(request)
+	reqGeneral.headerIntoRequest(request)
 	resp, err := client.Do(request)
 	if err != nil {
 		panic(err)
 	}
-	// 登录成功后有重定向url
-	location, ok := resp.Header["Location"]
-	if ok {
-		redirectURL := URL + location[0]
-		fmt.Printf("跳转到:%v\n", redirectURL)
-		request = reqGeneral.makeNilParamRequest("GET", redirectURL)
-		if resp, err = client.Do(request); err != nil {
-			panic(err)
-		}
+	// 用goquery解析html 判断是否登录成功
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		panic(err)
 	}
-	return ok, resp
-}
-
-func printBody(reader io.ReadCloser) {
-	defer reader.Close()
-	data, _ := ioutil.ReadAll(reader)
-	dec := mahonia.NewDecoder("gbk")
-	str := dec.ConvertString(string(data))
-	fmt.Println(str)
+	scriptText := doc.Find("script").Last().Text()
+	fmt.Println(scriptText)
+	wrong := strings.Contains(scriptText, "验证码不正确")
+	wrong = wrong || strings.Contains(scriptText, "密码错误")
+	return !wrong, resp
 }
