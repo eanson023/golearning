@@ -1,0 +1,157 @@
+body {
+    background-image: url('../img/background.gif');
+    background-repeat: repeat;
+    font-size: 15px;
+    font-family: "Monospace";
+    margin-bottom: 5%;
+    text-align: justify;
+}
+
+a:visited{
+    color: blue;
+}
+
+h1 {
+    text-align: center;
+}
+
+#container {
+    width: 100%;
+}
+
+#intro {
+    width: 55%;
+    margin-left: 5%;
+    /* position: absolute; */
+
+}
+
+#right {
+    width: 40%;
+    position: absolute;
+    right: 0px;
+    z-index: -1;
+}
+
+#repeat-bg {
+    height: 500px;
+    background-image: url('../img/bk.png');
+    background-repeat: repeat-y;
+    background-size: 100%;
+    opacity: 0.8;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    text-indent: 3px;
+}
+
+table,
+th,
+td {
+    border: 2px solid black;
+    padding: 4px;
+}
+
+.col1 {
+    width: 12.5%;
+}
+
+.col2 {
+    width: 16%;
+}
+
+ol li {
+    margin: 10px 0px;
+}
+
+.paragraph1 {
+    text-indent: 30px;
+    padding: 10px 20px;
+    line-height: 30px;
+}
+
+.paragraph2 {
+    line-height: 30px;
+    padding-right: 20px;
+}
+
+.title {
+    text-align: center;
+    font-weight: bold;
+}
+
+.blockquote {
+    text-align: right;
+    padding-right: 20px;
+    font-size: 13px;
+}
+
+.left-header {
+    /* 这里不会居中 醉了 */
+    padding-top: 10px;
+    padding-left: 30%;
+    writing-mode: vertical-lr;
+    font-weight: bolder;
+    text-align: center;
+    letter-spacing: 5px;
+    font-size: 16px;
+}
+
+#card {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    position: fixed;
+    top: 2%;
+    right: 2%;
+}
+
+#cloud-button>img {
+    cursor: pointer;
+    transition: all 0.6s;
+}
+
+#cloud-button>img:hover {
+    /* 放大倍数 */
+    transform: scale(1.2);
+}
+
+#original {
+    width: 300px;
+    height: 430px;
+    /* 卡片效果 */
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.27), 0 0 60px rgba(0, 0, 0, 0.06) inset;
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.27), 0 0 40px rgba(0, 0, 0, 0.06) inset;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.27), 0 0 40px rgba(0, 0, 0, 0.06) inset;
+    /* 相对于card div */
+    position: relative;
+    right: 250px;
+    top: -50px;
+    z-index: -1;
+    opacity: 0;
+}
+
+/* 网上C V的 便签 */
+#original:after {
+    width: 180px;
+    height: 20px;
+    margin-left: -90px;
+    border: 1px solid rgba(200, 200, 200, .8);
+    background: rgba(254, 254, 254, .6);
+
+    -moz-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
+    -webkit-box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0 3px rgba(0, 0, 0, 0.1);
+
+    -moz-transform: rotate(-5deg);
+    -webkit-transform: rotate(-5deg);
+    -o-transform: rotate(-5deg);
+    transform: rotate(-5deg);
+    position: absolute;
+    left: 50%;
+    top: -15px;
+    content: "PDF版(复刻原型)";
+    text-align: center;
+}
