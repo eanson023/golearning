@@ -29,7 +29,8 @@ func ParseToken(tokenSrt string, SecretKey []byte) (claims jwt.Claims, err error
 	token, err = jwt.Parse(tokenSrt, func(*jwt.Token) (interface{}, error) {
 		return SecretKey, nil
 	})
-	claims = token.Claims
+	// 转型
+	claims = token.Claims.(jwt.MapClaims)
 	return
 }
 
@@ -49,8 +50,7 @@ func TestToken(t *testing.T) {
 	if claims, err := ParseToken(tokenStr, sercretKey); err != nil {
 		t.Fatal(err)
 	} else {
-		mapClaims := claims.(jwt.MapClaims)
-		t.Log(mapClaims)
+		t.Log(claims)
 	}
 }
 
