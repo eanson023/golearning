@@ -1,2 +1,2 @@
 # go-learning
-Golang学习，进度30%
+Golang学习，进度49%
