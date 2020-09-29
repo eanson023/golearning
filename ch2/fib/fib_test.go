@@ -36,9 +36,10 @@ func TestFibTest(t *testing.T) {
 	fmt.Println(a, " ")
 	for i := 0; i < 5; i++ {
 		fmt.Print(" ", b)
-		tmp := a
-		a = b
-		b = tmp + a
+		// tmp := a
+		// a = b
+		// b = tmp + a
+		a, b = b, a+b
 	}
 	fmt.Println()
 }

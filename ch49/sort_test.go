@@ -47,3 +47,13 @@ func TestSort(t *testing.T) {
 	t.Log(s < s3)
 
 }
+
+const s = "Go101.org"
+
+var a byte = 1 << len(s) / 128
+var b byte = 1 << len(s[:]) / 128
+
+func TestT(t *testing.T) {
+	// 4 0
+	t.Log(a, b)
+}
