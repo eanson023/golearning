@@ -23,7 +23,7 @@ func TestAccessNotExistingKey(t *testing.T) {
 	t.Log(map1[1])
 	map1[2] = 0
 	//还是0
-	t.Log(map1[2])
+	t.Log(map1[2], len(map1))
 	//问题:map中的值到底是不存在还是默认就是0值???
 	//解决: v:值 ok:bool型 如果存在返回true 不存在不返回false
 	key := 3
