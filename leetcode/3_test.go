@@ -1,4 +1,4 @@
-package midinum
+package leetcode
 
 import (
 	"strings"

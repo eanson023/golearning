@@ -1,4 +1,4 @@
-package easy
+package leetcode
 
 import "testing"
 
@@ -21,7 +21,7 @@ type ListNode struct {
 	Next *ListNode
 }
 
-func TestName(t *testing.T) {
+func TestName2(t *testing.T) {
 	var head ListNode
 	head.Val = 1
 	t.Log(twoSum([]int{1, 2}, 3))
