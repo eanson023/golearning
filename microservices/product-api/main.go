@@ -16,10 +16,10 @@ func main() {
 	// 不使用http里的defaulrServeMux,我们要自己创建一个ServeMux来处理http请求
 	sm := http.NewServeMux()
 	sm.Handle("/", pd)
-	// 自定义server 我们可以做一些我们想做的东西
+	// 自定义server 我们可以做一些我们想做的东西（自定义参数）
 	s := &http.Server{
 		Addr:         ":8080",           //configure the bind address
-		Handler:      sm,                //set the default handler
+		Handler:      sm,                //set the my handler
 		ErrorLog:     logger,            //set the logger for the server
 		IdleTimeout:  120 * time.Second, //max time for connections using TCP Kepp-Alice
 		ReadTimeout:  1 * time.Second,   //max time to reead request from the client

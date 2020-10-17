@@ -17,6 +17,7 @@ func NewProductsHandler(l *log.Logger) *Products {
 	return &Products{l}
 }
 
+// 实现server.go http.Hanlder接口 构建RESTful服务
 func (p *Products) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case http.MethodGet:
@@ -24,6 +25,7 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	case http.MethodPost:
 		p.addProduct(rw, req)
 	case http.MethodPut:
+		// 使用正则判断uri数字
 		r := regexp.MustCompile(`/([0-9]+)`)
 		g := r.FindAllStringSubmatch(req.URL.Path, -1)
 

@@ -73,10 +73,13 @@ func UpdateProduct(p *Product) error {
 	if err != nil {
 		return err
 	}
+	p.CreatedOn = time.Now().UTC().String()
+	p.UpdatedOn = time.Now().UTC().String()
 	producList[pos] = fp
 	return nil
 }
 
+// ErrorProductNotFound 商品没找到
 var ErrorProductNotFound = fmt.Errorf("Product not found")
 
 func findProduct(id int) (*Product, int, error) {
