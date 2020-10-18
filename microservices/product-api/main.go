@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/eanson023/golearning/microservices/product-api/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -13,13 +14,26 @@ import (
 func main() {
 	logger := log.New(os.Stdout, "product-api ", log.LstdFlags)
 	pd := handlers.NewProductsHandler(logger)
-	// 不使用http里的defaulrServeMux,我们要自己创建一个ServeMux来处理http请求
-	sm := http.NewServeMux()
-	sm.Handle("/", pd)
+	// 使用gorilla的mux HTTP多路复用器 它实现了http.Hanlder接口所以和 http.ServeMux完全兼容
+	// http包中的defauleServeMux无法进行正则匹配 不能很好的构建RESTful service
+	router := mux.NewRouter()
+	getRouter := router.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/", pd.GetProducts)
+
+	putRouter := router.Methods(http.MethodPut).Subrouter()
+	// 利用正则匹配
+	putRouter.HandleFunc("/{id:[0-9]+}", pd.UpdateProduct)
+	// 使用中间件 检验json数据
+	putRouter.Use(pd.MidllewareProductValidation)
+
+	postRouter := router.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", pd.AddProduct)
+	postRouter.Use(pd.MidllewareProductValidation)
+
 	// 自定义server 我们可以做一些我们想做的东西（自定义参数）
 	s := &http.Server{
 		Addr:         ":8080",           //configure the bind address
-		Handler:      sm,                //set the my handler
+		Handler:      router,            //set the my handler
 		ErrorLog:     logger,            //set the logger for the server
 		IdleTimeout:  120 * time.Second, //max time for connections using TCP Kepp-Alice
 		ReadTimeout:  1 * time.Second,   //max time to reead request from the client

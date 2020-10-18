@@ -69,26 +69,27 @@ func AddProduct(p *Product) {
 
 // UpdateProduct 更新商品
 func UpdateProduct(p *Product) error {
-	fp, pos, err := findProduct(p.ID)
+	pos, err := findProduct(p.ID)
 	if err != nil {
 		return err
 	}
 	p.CreatedOn = time.Now().UTC().String()
 	p.UpdatedOn = time.Now().UTC().String()
-	producList[pos] = fp
+	producList[pos] = p
 	return nil
 }
 
 // ErrorProductNotFound 商品没找到
 var ErrorProductNotFound = fmt.Errorf("Product not found")
 
-func findProduct(id int) (*Product, int, error) {
+// return productList index
+func findProduct(id int) (int, error) {
 	for k, p := range producList {
 		if p.ID == id {
-			return p, k, nil
+			return k, nil
 		}
 	}
-	return nil, -1, ErrorProductNotFound
+	return -1, ErrorProductNotFound
 }
 
 func getNextID() int {
