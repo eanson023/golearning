@@ -80,6 +80,7 @@ func (p *Products) MidllewareProductValidation(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
+		// 将数据用上下文的防暑放到请求结构体中
 		r = r.WithContext(ctx)
 		next.ServeHTTP(rw, r)
 	})
