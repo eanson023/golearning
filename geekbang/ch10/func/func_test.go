@@ -3,6 +3,7 @@ package _func
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 )
@@ -76,4 +77,27 @@ func TestDefer(t *testing.T) {
 	//抛出不可修复的错误仍然可以会运行defer函数
 	panic("error")
 	t.Log("end.")
+}
+
+// 使用函数作为参数
+func Map(f func(rune) rune, s string) string {
+	rs := make([]rune, 0)
+	for _, r := range s {
+		rs = append(rs, f(r))
+	}
+	return string(rs)
+}
+
+func add1(r rune) rune {
+	return r + 1
+}
+
+//
+func TestMap(t *testing.T) {
+	s := "hello world"
+	res := Map(add1, s)
+	t.Log(res)
+	// 匿名函数
+	res = strings.Map(func(r rune) rune { return r - 1 }, res)
+	t.Log(res)
 }
