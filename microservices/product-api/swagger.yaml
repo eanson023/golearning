@@ -2,12 +2,21 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  GenericError:
+    properties:
+      message:
+        type: string
+        x-go-name: Message
+    type: object
+    x-go-package: github.com/eanson023/golearning/microservices/product-api/handlers
   Product:
     description: |-
       Product defines the structure for an API product
       swaggger:model
     properties:
       description:
+        description: the description for this poduct
+        maxLength: 10000
         type: string
         x-go-name: Description
       id:
@@ -17,36 +26,79 @@ definitions:
         type: integer
         x-go-name: ID
       name:
+        description: the name for this product
+        maxLength: 255
         type: string
         x-go-name: Name
       price:
+        description: the price for the product
         format: float
+        minimum: 0.01
         type: number
         x-go-name: Price
       sku:
+        description: the SKU for the product
+        pattern: '[a-z]+-[a-z]+-[a-z]+'
         type: string
         x-go-name: SKU
     required:
     - id
+    - name
+    - price
+    - sku
     type: object
     x-go-package: github.com/eanson023/golearning/microservices/product-api/data
+  ValidationError:
+    properties:
+      messages:
+        items:
+          type: string
+        type: array
+        x-go-name: Messages
+    type: object
+    x-go-package: github.com/eanson023/golearning/microservices/product-api/handlers
 info:
   description: |-
     Documentation for Product API
     Schema: http
-  title: handlers package classification of Product API
+  title: classification of Product API
   version: 1.0.0
 paths:
   /products:
     get:
       description: Returns a list of products
-      operationId: products
+      operationId: listProducts
       responses:
         "200":
-          $ref: '#/responses/productsResponseWrapper'
+          $ref: '#/responses/productsResponse'
+    post:
+      description: Create a new product
+      operationId: createProduct
+      responses:
+        "201":
+          $ref: '#/responses/noContentResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "422":
+          $ref: '#/responses/errorValidation'
+      tags:
+      - products
+    put:
+      description: Update a products details
+      operationId: updateProduct
+      responses:
+        "201":
+          $ref: '#/responses/noContentResponse'
+        "400":
+          $ref: '#/responses/errorResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "422":
+          $ref: '#/responses/errorValidation'
+      tags:
+      - products
   /products/{id}:
     delete:
-      description: delete products
       operationId: deleteProduct
       parameters:
       - description: The id of the product to delete from database
@@ -58,14 +110,39 @@ paths:
         x-go-name: ID
       responses:
         "201":
-          $ref: '#/responses/noContent'
+          $ref: '#/responses/noContentResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "501":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - products
+    get:
+      description: Returns a  product
+      operationId: listSingle
+      responses:
+        "200":
+          $ref: '#/responses/productsResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+        "500":
+          $ref: '#/responses/errorResponse'
       tags:
       - products
 produces:
 - application/json
 responses:
-  noContent: {}
-  productsResponseWrapper:
+  errorResponse:
+    description: Generic error message returned as a string
+    schema:
+      $ref: '#/definitions/GenericError'
+  errorValidation:
+    description: Validation errors defined as an array of strings
+    schema:
+      $ref: '#/definitions/ValidationError'
+  noContentResponse:
+    description: noContent to response
+  productsResponse:
     description: A list of products return in response
     schema:
       items:

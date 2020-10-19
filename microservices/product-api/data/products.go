@@ -1,11 +1,7 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator" //验证
-	"io"
-	"regexp"
 	"time"
 )
 
@@ -18,16 +14,35 @@ type Product struct {
 	// min: 1
 	ID int `json:"id"`
 
-	Name        string  `json:"name" validate:"required"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price" validate:"gt=0"`
-	SKU         string  `json:"sku" validate:"required,sku"` //自定义验证函数
-	CreatedOn   string  `json:"-"`
-	UpdatedOn   string  `json:"-"`
-	DeletedOn   string  `json:"-"` //使用'-'忽略该字段
+	// the name for this product
+	//
+	// required: true
+	// max length: 255
+	Name string `json:"name" validate:"required"`
+	// the description for this poduct
+	//
+	// required: false
+	// max length: 10000
+	Description string `json:"description"`
+	// the price for the product
+	//
+	// required: true
+	// min: 0.01
+	Price float32 `json:"price" validate:"gt=0"`
+	// the SKU for the product
+	//
+	// required: true
+	// pattern: [a-z]+-[a-z]+-[a-z]+
+	SKU       string `json:"sku" validate:"required,sku"` //自定义验证函数
+	CreatedOn string `json:"-"`
+	UpdatedOn string `json:"-"`
+	DeletedOn string `json:"-"` //使用'-'忽略该字段
 }
 
-var producList = []*Product{
+// Products 产品列表
+type Products []*Product
+
+var producList Products = []*Product{
 	&Product{
 		ID:          1,
 		Name:        "Latte",
@@ -48,39 +63,19 @@ var producList = []*Product{
 	},
 }
 
-// 参数校验
-func (p *Product) Validate() error {
-	validate := validator.New()
-	// 注册validation
-	validate.RegisterValidation("sku", skuValidation)
-	return validate.Struct(p)
-}
-
-// 自定义validation  利用正则表达式
-func skuValidation(fl validator.FieldLevel) bool {
-	// sku is of format abc-absd-dfsdf
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-	matches := re.FindAllString(fl.Field().String(), -1)
-	return len(matches) == 1
-}
-
-// FromJSON deserialize
-func (p *Product) FromJSON(r io.Reader) error {
-	d := json.NewDecoder(r)
-	return d.Decode(p)
-}
-
-type Products []*Product
-
-// ToJSON 封装json数据 将其写入到writer中
-func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(p)
-}
-
 // GetProducts 模仿数据库 获取数据
 func GetProducts() Products {
 	return producList
+}
+
+func GetProduct(p *Product) error {
+	pos, err := findProduct(p.ID)
+	if err != nil {
+		return err
+	}
+	// 更改指针指向
+	*p = *producList[pos]
+	return nil
 }
 
 // AddProduct 添加商品

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"github.com/eanson023/golearning/microservices/product-api/data"
 	"github.com/eanson023/golearning/microservices/product-api/handlers"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
@@ -12,34 +14,55 @@ import (
 	"time"
 )
 
+var port string
+
+func init() {
+	flag.StringVar(&port, "BIND_ADDRESS", ":8080", "server port")
+}
+
 func main() {
+	flag.Parse()
+
+	// 日志器
 	logger := log.New(os.Stdout, "product-api ", log.LstdFlags)
-	pd := handlers.NewProductsHandler(logger)
+	// 校验器
+	validator := data.NewValiation()
+
+	// productHandler  该结构体的方法 是HanlderFunc
+	pd := handlers.NewProductsHandler(logger, validator)
 	// 使用gorilla的mux HTTP多路复用器 它实现了http.Hanlder接口所以和 http.ServeMux完全兼容
 	// http包中的defauleServeMux无法进行正则匹配 不能很好的构建RESTful service
 	router := mux.NewRouter()
-	getRouter := router.Methods("GET").Subrouter()
-	getRouter.HandleFunc("/", pd.GetProducts)
+	// 路由
+	{
+		getRouter := router.Methods("GET").Subrouter()
+		getRouter.HandleFunc("/products", pd.GetProducts)
+		getRouter.HandleFunc("/products/{id:[0-9]+}", pd.GetProductSingle)
 
-	putRouter := router.Methods(http.MethodPut).Subrouter()
-	// 利用正则匹配
-	putRouter.HandleFunc("/{id:[0-9]+}", pd.UpdateProduct)
-	// 使用中间件 检验json数据
-	putRouter.Use(pd.MidllewareProductValidation)
+		putRouter := router.Methods(http.MethodPut).Subrouter()
+		// 利用正则匹配
+		putRouter.HandleFunc("/products/{id:[0-9]+}", pd.UpdateProduct)
+		// 使用中间件 检验json数据
+		putRouter.Use(pd.MidllewareProductValidation)
 
-	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", pd.AddProduct)
-	postRouter.Use(pd.MidllewareProductValidation)
+		postRouter := router.Methods(http.MethodPost).Subrouter()
+		postRouter.HandleFunc("/products", pd.AddProduct)
+		postRouter.Use(pd.MidllewareProductValidation)
 
-	// 整合swagger
-	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
-	sh := middleware.Redoc(opts, nil)
-	getRouter.Handle("/docs", sh)
-	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+		deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+		deleteRouter.HandleFunc("/products/{id:[0-9]+}", pd.DeleteProduct)
+
+		// 整合swagger
+		opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+		sh := middleware.Redoc(opts, nil)
+
+		getRouter.Handle("/docs", sh)
+		getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+	}
 
 	// 自定义server 我们可以做一些我们想做的东西（自定义参数）
 	s := &http.Server{
-		Addr:         ":8080",           //configure the bind address
+		Addr:         port,              //configure the bind address
 		Handler:      router,            //set the my handler
 		ErrorLog:     logger,            //set the logger for the server
 		IdleTimeout:  120 * time.Second, //max time for connections using TCP Kepp-Alice
