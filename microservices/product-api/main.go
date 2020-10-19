@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/eanson023/golearning/microservices/product-api/handlers"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -29,6 +30,12 @@ func main() {
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/", pd.AddProduct)
 	postRouter.Use(pd.MidllewareProductValidation)
+
+	// 整合swagger
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opts, nil)
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
 	// 自定义server 我们可以做一些我们想做的东西（自定义参数）
 	s := &http.Server{

@@ -97,6 +97,17 @@ func UpdateProduct(p *Product) error {
 	return nil
 }
 
+func DeleteProduct(p *Product) error {
+	pos, err := findProduct(p.ID)
+	if err != nil {
+		return err
+	}
+	p.CreatedOn = time.Now().UTC().String()
+	p.UpdatedOn = time.Now().UTC().String()
+	producList = append(producList[:pos], producList[pos+1:]...)
+	return nil
+}
+
 // ErrorProductNotFound 商品没找到
 var ErrorProductNotFound = fmt.Errorf("Product not found")
 

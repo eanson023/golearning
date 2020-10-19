@@ -1,3 +1,16 @@
+// handlers package classification of Product API
+//
+// Documentation for Product API
+// Schema: http
+// BasePath: /
+// Version: 1.0.0
+//
+// Consumes:
+// - application/json
+//
+// Produces:
+// - application/json
+// swagger:meta
 package handlers
 
 import (
@@ -10,6 +23,14 @@ import (
 	"strconv"
 )
 
+// A list of products return in response
+// swagger:response productsResponse
+type productsResponse struct {
+	// All products in the system
+	// in:body
+	Body []data.Product
+}
+
 type Products struct {
 	l *log.Logger
 }
@@ -17,6 +38,12 @@ type Products struct {
 func NewProductsHandler(l *log.Logger) *Products {
 	return &Products{l}
 }
+
+// swagger:route GET /products products
+//  Returns a list of products
+// responses:
+// 	200: productsResponse
+//  500:
 
 // GetProducts 获取产品
 func (p *Products) GetProducts(rw http.ResponseWriter, h *http.Request) {
@@ -56,6 +83,25 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 	prod.ID = id
 	p.l.Printf("Prod: %#v\n", prod)
 	err = data.UpdateProduct(prod)
+	if err == data.ErrorProductNotFound {
+		http.Error(rw, "product not found", http.StatusNotFound)
+	}
+}
+
+func (p *Products) DeleteProduct(rw http.ResponseWriter, req *http.Request) {
+	idStr := mux.Vars(req)["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(rw, fmt.Sprintf("can't format the var:%s we need number", idStr), http.StatusBadRequest)
+		return
+	}
+	p.l.Println("Hanlde DELETE Product")
+
+	// 从上下文中获取
+	prod := req.Context().Value(KeyProduct{}).(*data.Product)
+	prod.ID = id
+	p.l.Printf("Prod: %#v\n", prod)
+	err = data.DeleteProduct(prod)
 	if err == data.ErrorProductNotFound {
 		http.Error(rw, "product not found", http.StatusNotFound)
 	}
