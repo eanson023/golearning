@@ -18,10 +18,6 @@ func NewProductsHandler(l *log.Logger) *Products {
 	return &Products{l}
 }
 
-// // 实现server.go http.Hanlder接口 构建RESTful服务
-// func (p *Products) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-// }
-
 // GetProducts 获取产品
 func (p *Products) GetProducts(rw http.ResponseWriter, h *http.Request) {
 	p.l.Println("Hanlde GET Products")
