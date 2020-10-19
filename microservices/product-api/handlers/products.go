@@ -24,13 +24,27 @@ import (
 )
 
 // A list of products return in response
-// swagger:response productsResponse
-type productsResponse struct {
+// swagger:response productsResponseWrapper
+type productsResponseWrapper struct {
 	// All products in the system
 	// in:body
 	Body []data.Product
 }
 
+// swagger:response noContent
+// noContent to response
+type productsNoContent struct {
+}
+
+// swagger:parameters deleteProduct
+type productIDParameterWrapper struct {
+	// The id of the product to delete from database
+	// in: path
+	// required: true
+	ID int `json:"id"`
+}
+
+// Products is a http.Hanlder
 type Products struct {
 	l *log.Logger
 }
@@ -42,8 +56,7 @@ func NewProductsHandler(l *log.Logger) *Products {
 // swagger:route GET /products products
 //  Returns a list of products
 // responses:
-// 	200: productsResponse
-//  500:
+// 	200: productsResponseWrapper
 
 // GetProducts 获取产品
 func (p *Products) GetProducts(rw http.ResponseWriter, h *http.Request) {
@@ -88,6 +101,11 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// DeleteProduct deletes a product from the database
+// swagger:route DELETE /products/{id} products deleteProduct
+//  delete products
+// responses:
+// 	201: noContent
 func (p *Products) DeleteProduct(rw http.ResponseWriter, req *http.Request) {
 	idStr := mux.Vars(req)["id"]
 	id, err := strconv.Atoi(idStr)
