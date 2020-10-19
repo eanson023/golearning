@@ -3,17 +3,19 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator" //验证
 	"io"
+	"regexp"
 	"time"
 )
 
 // Product defines the structure for an API product
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-	SKU         string  `json:"sku"`
+	Price       float32 `json:"price" validate:"gt=0"`
+	SKU         string  `json:"sku" validate:"required,sku"` //自定义验证函数
 	CreatedOn   string  `json:"-"`
 	UpdatedOn   string  `json:"-"`
 	DeletedOn   string  `json:"-"` //使用'-'忽略该字段
@@ -38,6 +40,22 @@ var producList = []*Product{
 		CreatedOn:   time.Now().UTC().String(),
 		UpdatedOn:   time.Now().UTC().String(),
 	},
+}
+
+// 参数校验
+func (p *Product) Validate() error {
+	validate := validator.New()
+	// 注册validation
+	validate.RegisterValidation("sku", skuValidation)
+	return validate.Struct(p)
+}
+
+// 自定义validation  利用正则表达式
+func skuValidation(fl validator.FieldLevel) bool {
+	// sku is of format abc-absd-dfsdf
+	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
+	matches := re.FindAllString(fl.Field().String(), -1)
+	return len(matches) == 1
 }
 
 // FromJSON deserialize

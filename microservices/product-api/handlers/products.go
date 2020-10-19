@@ -75,6 +75,13 @@ func (p *Products) MidllewareProductValidation(next http.Handler) http.Handler {
 			return
 		}
 
+		// validate the product
+		if err := prod.Validate(); err != nil {
+			p.l.Println("[ERROR] validating product", err)
+			http.Error(rw, "Error valiating product "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
 		// 将数据用上下文的防暑放到请求结构体中
 		r = r.WithContext(ctx)
