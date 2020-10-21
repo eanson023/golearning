@@ -6,7 +6,7 @@ import (
 )
 
 // Product defines the structure for an API product
-// swaggger:model
+// swagger:model
 type Product struct {
 	// the id for the user
 	//

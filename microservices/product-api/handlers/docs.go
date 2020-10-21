@@ -1,7 +1,7 @@
 // Package handlers classification of Product API
 //
 // Documentation for Product API
-// Schema: http
+// Schemes: http
 // BasePath: /
 // Version: 1.0.0
 //
@@ -39,15 +39,6 @@ type productsResponseWrapper struct {
 type noContentResponseWrapper struct {
 }
 
-// swagger:parameters deleteProduct
-type productIDParameterWrapper struct {
-	// The id of the product to delete from database
-	// in: path
-	// required: true
-	ID int `json:"id"`
-}
-
-//
 // NOTE: Types defined here are purely for documentation purposes
 // these types are not used by any of the handers
 
@@ -57,4 +48,13 @@ type errorResponseWrapper struct {
 	// Description of the error
 	// in: body
 	Body GenericError
+}
+
+// 之后的tag是指明引用处
+// swagger:parameters listSingleProduct deleteProduct
+type productIdParamsWarpper struct {
+	// The id of the product for which the operation relates
+	// in:path
+	// required:true
+	ID int `json:"id"`
 }
