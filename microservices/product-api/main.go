@@ -6,6 +6,7 @@ import (
 	"github.com/eanson023/golearning/microservices/product-api/data"
 	"github.com/eanson023/golearning/microservices/product-api/handlers"
 	"github.com/go-openapi/runtime/middleware"
+	rillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -34,40 +35,42 @@ func main() {
 	// http包中的defauleServeMux无法进行正则匹配 不能很好的构建RESTful service
 	router := mux.NewRouter()
 	// 路由
-	{
-		getRouter := router.Methods("GET").Subrouter()
-		getRouter.HandleFunc("/products", pd.GetProducts)
-		getRouter.HandleFunc("/products/{id:[0-9]+}", pd.GetProductSingle)
 
-		putRouter := router.Methods(http.MethodPut).Subrouter()
-		// 利用正则匹配
-		putRouter.HandleFunc("/products/{id:[0-9]+}", pd.UpdateProduct)
-		// 使用中间件 检验json数据
-		putRouter.Use(pd.MidllewareProductValidation)
+	getRouter := router.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/products", pd.GetProducts)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", pd.GetProductSingle)
 
-		postRouter := router.Methods(http.MethodPost).Subrouter()
-		postRouter.HandleFunc("/products", pd.AddProduct)
-		postRouter.Use(pd.MidllewareProductValidation)
+	putRouter := router.Methods(http.MethodPut).Subrouter()
+	// 利用正则匹配
+	putRouter.HandleFunc("/products/{id:[0-9]+}", pd.UpdateProduct)
+	// 使用中间件 检验json数据
+	putRouter.Use(pd.MidllewareProductValidation)
 
-		deleteRouter := router.Methods(http.MethodDelete).Subrouter()
-		deleteRouter.HandleFunc("/products/{id:[0-9]+}", pd.DeleteProduct)
+	postRouter := router.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/products", pd.AddProduct)
+	postRouter.Use(pd.MidllewareProductValidation)
 
-		// 整合swagger
-		opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
-		sh := middleware.Redoc(opts, nil)
+	deleteRouter := router.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/products/{id:[0-9]+}", pd.DeleteProduct)
 
-		getRouter.Handle("/docs", sh)
-		getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
-	}
+	// 整合swagger
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opts, nil)
+
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+
+	// CORS 跨域资源访问
+	corsHanler := rillaHandlers.CORS(rillaHandlers.AllowedOrigins([]string{"http://localhost:4200"}))
 
 	// 自定义server 我们可以做一些我们想做的东西（自定义参数）
 	s := &http.Server{
-		Addr:         port,              //configure the bind address
-		Handler:      router,            //set the my handler
-		ErrorLog:     logger,            //set the logger for the server
-		IdleTimeout:  120 * time.Second, //max time for connections using TCP Kepp-Alice
-		ReadTimeout:  1 * time.Second,   //max time to reead request from the client
-		WriteTimeout: 1 * time.Second,   //max time to write response to the client
+		Addr:         port,               //configure the bind address
+		Handler:      corsHanler(router), //使用corsHandler之后再set the my router handler这个语法有点打脑壳
+		ErrorLog:     logger,             //set the logger for the server
+		IdleTimeout:  120 * time.Second,  //max time for connections using TCP Kepp-Alice
+		ReadTimeout:  1 * time.Second,    //max time to reead request from the client
+		WriteTimeout: 1 * time.Second,    //max time to write response to the client
 	}
 	go func() {
 		logger.Printf("starting server on port: %s", s.Addr)
