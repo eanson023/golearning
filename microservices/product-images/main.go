@@ -26,7 +26,7 @@ func main() {
 
 	logger := log.New(os.Stdout, "[product-images] ", -1)
 	// 创建本地存储对象
-	local, err := files.NewLocal("/Users/wdh/Downloads", 1024*1024*4)
+	local, err := files.NewLocal(*basePath, 1024*1024*2)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -35,6 +35,13 @@ func main() {
 	router := mux.NewRouter()
 	postRouter := router.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", files.ServeHTTP)
+
+	// 文件系统
+	getRouter := router.Methods(http.MethodGet).Subrouter()
+	// StripPrefix返回一个处理器，该处理器会将请求的URL.Path字段中给定前缀prefix去除后再交由h处理。
+	// StripPrefix会向URL.Path字段中没有给定前缀的请求回复404 page not found。
+	fileHandler := http.StripPrefix("/images/", http.FileServer(http.Dir(*basePath)))
+	getRouter.Handle("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fileHandler)
 
 	server := &http.Server{
 		Addr:         *bindAddress,

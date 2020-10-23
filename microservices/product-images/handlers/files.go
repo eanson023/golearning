@@ -37,11 +37,13 @@ func (f *Files) invalidURI(uri string, rw http.ResponseWriter) {
 	http.Error(rw, "Invalid file path shouldbe in the format /[id]/[filepath]", http.StatusBadRequest)
 }
 
-func (f *Files) saveFile(id, filename string, rw http.ResponseWriter, rc io.ReadCloser) {
+func (f *Files) saveFile(id, filename string, rw http.ResponseWriter, body io.ReadCloser) {
 	filePath := filepath.Join(id, filename)
-	err := f.store.Save(filePath, rc)
-	if err != nil {
+	err := f.store.Save(filePath, body)
+	if err == files.ExceedMustFileSizeError {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	} else if err != nil {
 		f.log.Println("Unable to save file error:", err)
-		http.Error(rw, "Unable to save file", http.StatusInternalServerError)
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }
