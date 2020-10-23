@@ -25,12 +25,7 @@ func NewLocal(basePath string, maxSize int) (*Local, error) {
 	return &Local{maxSize, p}, nil
 }
 
-var ExceedMustFileSizeError error
-
-func NewExceedMustFileSizeError(size int) error {
-	ExceedMustFileSizeError = fmt.Errorf("file size must less equal than %d byte", size)
-	return ExceedMustFileSizeError
-}
+var ExceedMustFileSizeError error = fmt.Errorf("exceed max file size")
 
 // Save the contents of the Writer to the given path
 // path is a relative path, basePath will be appended
@@ -38,7 +33,7 @@ func (l *Local) Save(path string, contents io.Reader) error {
 	// 大小校验
 	reader := bufio.NewReader(contents)
 	if reader.Size() > l.maxFileSize {
-		return NewExceedMustFileSizeError(l.maxFileSize)
+		return ExceedMustFileSizeError
 	}
 	fullPath := l.fullPath(path)
 	// 看文件夹是否存在

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/eanson023/golearning/microservices/product-images/files"
 	"github.com/eanson023/golearning/microservices/product-images/handlers"
+	rillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -34,7 +35,8 @@ func main() {
 
 	router := mux.NewRouter()
 	postRouter := router.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", files.ServeHTTP)
+	postRouter.HandleFunc("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", files.UploadREST)
+	postRouter.HandleFunc("/", files.UploadMulipart)
 
 	// 文件系统
 	getRouter := router.Methods(http.MethodGet).Subrouter()
@@ -43,9 +45,12 @@ func main() {
 	fileHandler := http.StripPrefix("/images/", http.FileServer(http.Dir(*basePath)))
 	getRouter.Handle("/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}", fileHandler)
 
+	// CORS 跨域资源访问
+	corsHanler := rillaHandlers.CORS(rillaHandlers.AllowedOrigins([]string{"http://localhost:4200"}))
+
 	server := &http.Server{
 		Addr:         *bindAddress,
-		Handler:      router,
+		Handler:      corsHanler(router),
 		ErrorLog:     logger,
 		IdleTimeout:  120 * time.Second, //max time for connections using TCP Kepp-Alice
 		ReadTimeout:  1 * time.Second,   //max time to reead request from the client
