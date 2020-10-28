@@ -65,7 +65,7 @@ func (v *Validation) Validate(i interface{}) ValidationErrors {
 // 自定义validation  利用正则表达式
 func skuValidation(fl validator.FieldLevel) bool {
 	// sku is of format abc-absd-dfsdf
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
+	re := regexp.MustCompile(`^[a-z]+-[a-z]+-[a-z]+$`)
 	matches := re.FindAllString(fl.Field().String(), -1)
 	return len(matches) == 1
 }
