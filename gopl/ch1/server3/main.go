@@ -3,10 +3,11 @@ package main
 
 import (
 	"fmt"
-	"gopl/ch1/lissajous/lissa"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/eanson023/golearning/gopl/ch1/lissajous/lissa"
 )
 
 var mu sync.Mutex

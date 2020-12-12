@@ -2,10 +2,11 @@ package jwt
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/satori/go.uuid"
 	"testing"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	uuid "github.com/satori/go.uuid"
 )
 
 // 创建token
@@ -43,7 +44,7 @@ type MyCustomClaims struct {
 func TestToken(t *testing.T) {
 	sercretKey := []byte("idghsu&*%hvukvuy27t7&%#^&@fvidjsj")
 	issuser := "eanson"
-	uuid := uuid.Must(uuid.NewV4()).String()
+	uuid := uuid.Must(uuid.NewV4(), nil).String()
 	isAdmin := false
 	tokenStr, _ := CreateToken(sercretKey, issuser, uuid, isAdmin)
 	t.Log(tokenStr)
@@ -57,18 +58,15 @@ func TestToken(t *testing.T) {
 func TestUUID(t *testing.T) {
 	// Creating UUID Version 4
 	// panic on error
-	u1 := uuid.Must(uuid.NewV4())
+	u1 := uuid.Must(uuid.NewV4(), nil)
 	fmt.Printf("UUIDv4: %s\n", u1)
 	// or error handling
-	u2, err := uuid.NewV4()
-	if err != nil {
-		fmt.Printf("Something went wrong: %s", err)
-		return
-	}
+	u2 := uuid.NewV4()
+
 	fmt.Printf("UUIDv4: %s\n", u2)
 
 	// Parsing UUID from string input
-	u2, err = uuid.FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
+	u2, err := uuid.FromString("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 	if err != nil {
 		fmt.Printf("Something went wrong: %s", err)
 		return

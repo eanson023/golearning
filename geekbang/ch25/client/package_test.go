@@ -2,8 +2,10 @@ package client
 
 import (
 	// 从GOPATH src后的目录开始
-	"golearning/ch25/series"
+
 	"testing"
+
+	"github.com/eanson023/golearning/geekbang/ch25/series"
 )
 
 /*

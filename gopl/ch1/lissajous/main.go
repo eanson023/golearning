@@ -2,12 +2,13 @@
 package main
 
 import (
-	"gopl/ch1/lissajous/lissa"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/eanson023/golearning/gopl/ch1/lissajous/lissa"
 )
 
 func main() {

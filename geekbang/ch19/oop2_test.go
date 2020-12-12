@@ -1,8 +1,9 @@
 package ch19
 
 import (
-	"go_learning/ch19/person"
 	"testing"
+
+	"github.com/eanson023/golearning/geekbang/ch19/person"
 )
 
 // 面向对象三大特性

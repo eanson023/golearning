@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go_learning/ch12/mypack"
+
+	"github.com/eanson023/golearning/geekbang/ch12/mypack"
 )
 
 type Student mypack.Person
