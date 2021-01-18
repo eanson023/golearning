@@ -34,16 +34,16 @@ func TestEmbeddedJson(t *testing.T) {
 }
 
 // easyjson代码生成的方式测试
-func TestEasyJson(t *testing.T) {
-	e := new(Employee)
-	e.UnmarshalJSON([]byte(jsonStr))
-	t.Log(e.BasicInfo, e.JobInfo)
-	if value, err := e.MarshalJSON(); err != nil {
-		t.Error(err)
-	} else {
-		t.Log(string(value))
-	}
-}
+// func TestEasyJson(t *testing.T) {
+// 	e := new(Employee)
+// 	e.UnmarshalJSON([]byte(jsonStr))
+// 	t.Log(e.BasicInfo, e.JobInfo)
+// 	if value, err := e.MarshalJSON(); err != nil {
+// 		t.Error(err)
+// 	} else {
+// 		t.Log(string(value))
+// 	}
+// }
 
 // 性能测试
 func BenchmarkEmbeddedJson(b *testing.B) {
@@ -61,15 +61,15 @@ func BenchmarkEmbeddedJson(b *testing.B) {
 	}
 }
 
-func BenchmarkEasyJson(b *testing.B) {
-	e := new(Employee)
-	for i := 0; i < b.N; i++ {
-		e.UnmarshalJSON([]byte(jsonStr))
-		if _, err := e.MarshalJSON(); err != nil {
-			b.Error(err)
-		}
-	}
-}
+// func BenchmarkEasyJson(b *testing.B) {
+// 	e := new(Employee)
+// 	for i := 0; i < b.N; i++ {
+// 		e.UnmarshalJSON([]byte(jsonStr))
+// 		if _, err := e.MarshalJSON(); err != nil {
+// 			b.Error(err)
+// 		}
+// 	}
+// }
 
 /*
 easyjson大概快了4倍
